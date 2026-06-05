@@ -4,22 +4,30 @@ import numpy as np
 
 # --- Algoritma ---
 def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
-    # 1. Excel'den Çap ve Adet sütunlarını otomatik bul
-    cap_col = [col for col in df_envanter.columns if 'Çap' in col or 'cap' in col.lower()][0]
-    adet_col = [col for col in df_envanter.columns if 'Adet' in col or 'adet' in col.lower()][0]
+    # 1. Sütun isimlerini güvenli bul
+    cap_col = [col for col in df_envanter.columns if 'çap' in str(col).lower() or 'cap' in str(col).lower()][0]
+    adet_col = [col for col in df_envanter.columns if 'adet' in str(col).lower()][0]
     
-    # 2. Aynı çapları grupla ve toplam adetlerini bir sözlüğe (dictionary) çevir
+    # 2. Excel'deki virgülleri (2,50) noktaya çevirip garanti şekilde sayıya dönüştür
+    df_envanter[cap_col] = pd.to_numeric(df_envanter[cap_col].astype(str).str.replace(',', '.'), errors='coerce')
+    df_envanter[adet_col] = pd.to_numeric(df_envanter[adet_col], errors='coerce')
+    df_envanter = df_envanter.dropna(subset=[cap_col]) # Boş satırları temizle
+    
+    # 3. Stok Sözlüğünü Oluştur
     envanter_gruplu = df_envanter.groupby(cap_col)[adet_col].sum().to_dict()
     
-    # 3. Teorik Daralma Dağılımını Hesapla
+    # 4. Teorik Daralma Dağılımını Hesapla
     total_strain = 2 * np.log(baslangic / hedef)
     
-    if strateji == "sabit":
+    # Güvenlik subabı: Seçilen stratejiyi küçük harfe çevirip kelime arıyoruz
+    str_isim = str(strateji).lower()
+    if "sabit" in str_isim:
         weights = np.ones(hadde_sayisi)
-    elif strateji == "azalan":
-        weights = np.linspace(hadde_sayisi, 1, hadde_sayisi)
-    elif strateji == "artan":
+    elif "artan" in str_isim:
         weights = np.linspace(1, hadde_sayisi, hadde_sayisi)
+    else:
+        # "azalan" kelimesi geçerse veya hiçbir şey bulunamazsa varsayılan olarak azalan yap
+        weights = np.linspace(hadde_sayisi, 1, hadde_sayisi)
         
     strains = (weights / weights.sum()) * total_strain
     
@@ -33,11 +41,9 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
     actual_schedule = []
     current_D = baslangic
     
-    # 4. Stok Miktarına (Adet) Göre Seçim Yap
     for i in range(hadde_sayisi - 1):
         target = theoretical[i]
         
-        # Filtre: Çapı uygun olan VE Stokta (Adet > 0) olan kalıplar
         valid_dies = [cap for cap, adet in envanter_gruplu.items() if adet > 0 and cap < current_D and cap > hedef]
         
         if len(valid_dies) == 0:
@@ -48,18 +54,15 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
             idx = (np.abs(valid_pool - target)).argmin()
             chosen_die = valid_pool[idx]
             kalan_stok = envanter_gruplu[chosen_die]
-            durum = f"Stoktan ({kalan_stok} adet kaldı)"
+            durum = f"Stoktan ({int(kalan_stok)} adet kaldı)"
             
-            # Seçilen kalıptan 1 adet düş
-            envanter_gruplu[chosen_die] -= 1
+            envanter_gruplu[chosen_die] -= 1 # Kullanılanı stoktan düş
             
         actual_schedule.append((chosen_die, durum, target))
         current_D = chosen_die
         
-    # Final Hedef Kalıbı
     actual_schedule.append((hedef, "Final Hedef Kalıbı", hedef))
     
-    # 5. Tabloyu Oluştur
     results = []
     prev_D = baslangic
     for i, data in enumerate(actual_schedule):
@@ -77,31 +80,30 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
     return pd.DataFrame(results)
 
 # --- Arayüz (UI) ---
-st.set_page_config(page_title="Hadde Serisi Oluşturma", layout="wide")
-st.title("Envantere Göre Hadde Serisi Belirleme")
-st.markdown("Stok durumunu ve miktarını dikkate alarak hat dizayn edilir.")
+st.set_page_config(page_title="Hadde Tasarım Simülatörü", layout="wide")
+st.title("Tel Çekme: Envanter Odaklı Hadde Dizilimi Simülatörü")
+st.markdown("Doktora tezi proses optimizasyon aracı. Stok miktarını (Adet) dikkate alır.")
 
 col1, col2 = st.columns([1, 2])
 
 with col1:
-    st.header("1. Envanter Yükleme")
-    yuklenen_dosya = st.file_uploader("Envanter Dosyasını Seç (.xlsx)", type=["xlsx", "csv"])
+    st.header("1. Envanteri Yükle")
+    yuklenen_dosya = st.file_uploader("Envanter Dosyasını Seç (.xlsx veya .csv)", type=["xlsx", "csv"])
+    
     st.header("2. Parametreler")
     baslangic = st.number_input("Başlangıç Çapı (mm)", value=8.00, step=0.1)
-    hedef = st.selectbox("Nihai Çap (mm)", [2.80, 2.50, 2.10], index=1)
-    sayi = st.slider("Hadde Sayısı", min_value=4, max_value=14, value=9)
-    strateji = st.selectbox("Redüksiyon Stratejisi", ["Azalan", "Sabit", "Artan"])
+    hedef = st.selectbox("Hedef Nihai Çap (mm)", [2.80, 2.50, 2.10], index=1)
+    sayi = st.slider("Ara Hadde Sayısı", min_value=4, max_value=14, value=9)
+    strateji = st.selectbox("Daralma Stratejisi", ["Azalan Daralma", "Sabit Daralma", "Artan Daralma"])
 
 with col2:
     if yuklenen_dosya is not None:
-        # Dosyayı oku (CSV veya Excel)
         try:
             if yuklenen_dosya.name.endswith('.csv'):
                 df_envanter = pd.read_csv(yuklenen_dosya)
             else:
                 df_envanter = pd.read_excel(yuklenen_dosya)
                 
-            # Hesaplamayı tetikle
             df_sonuc = hesapla_hadde_serisi(baslangic, hedef, sayi, strateji, df_envanter)
             
             st.header("Sonuç ve Kesit Daralma Grafiği")
@@ -111,6 +113,6 @@ with col2:
             st.dataframe(df_sonuc, use_container_width=True)
             
         except Exception as e:
-            st.error(f"Dosya okunurken bir hata oluştu: Lütfen Çap ve Adet sütunlarının olduğundan emin olun. Hata detayı: {e}")
+            st.error(f"Uygulamada bir hata oluştu. Hata detayı: {e}")
     else:
-        st.info("Envantere ait Excel dosyasını yükle.")
+        st.info("👈 Lütfen sol taraftan 'PCD Hadde Envanter' Excel dosyanızı yükleyin.")
