@@ -5,7 +5,6 @@ import streamlit.components.v1 as components
 
 # --- Animasyon Motoru (SVG / HTML) ---
 def ciz_animasyon(df_schedule, baslangic_cap):
-    # Çizim alanının genişliği hadde sayısına göre dinamik hesaplanır
     svg_width = len(df_schedule) * 200 + 150
     
     html_kodu = f"""
@@ -13,39 +12,42 @@ def ciz_animasyon(df_schedule, baslangic_cap):
     <html>
     <head>
     <style>
-        .wire {{ fill: #b87333; }} /* Bakır Rengi */
-        .die-body {{ fill: #e0e0e0; stroke: #757575; stroke-width: 2; }} /* PCD Kalıp Gövdesi */
-        .die-hole {{ fill: #ffffff; }} /* Kalıp Deliği */
+        .wire {{ fill: #b87333; }} 
+        .die-body {{ fill: #e0e0e0; stroke: #757575; stroke-width: 2; }} 
+        .die-hole {{ fill: #ffffff; }} 
         .text-title {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; fill: #1e1e1e; font-weight: bold; }}
-        .text-info {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; fill: #424242; }}
-        .text-wire {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; fill: #b87333; font-weight: bold; }}
+        .text-info {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; fill: #424242; font-weight: bold; }}
+        .text-wire {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; fill: #b87333; font-weight: bold; }}
         
-        /* Telin çekilme hareketini veren animasyon */
         .flow-line {{ stroke: rgba(255,255,255,0.6); stroke-width: 2; stroke-dasharray: 10, 10; animation: flow 0.5s linear infinite; }}
         @keyframes flow {{ 0% {{ stroke-dashoffset: 20; }} 100% {{ stroke-dashoffset: 0; }} }}
         
-        .container {{ overflow-x: auto; white-space: nowrap; border: 2px solid #e0e0e0; border-radius: 10px; padding: 20px; background-color: #fafafa; box-shadow: inset 0px 0px 10px rgba(0,0,0,0.05); }}
+        /* Scrollbar'ı daha zarif yapmak için küçük bir dokunuş */
+        ::-webkit-scrollbar {{ height: 10px; }}
+        ::-webkit-scrollbar-track {{ background: #f1f1f1; border-radius: 5px; }}
+        ::-webkit-scrollbar-thumb {{ background: #c1c1c1; border-radius: 5px; }}
+        ::-webkit-scrollbar-thumb:hover {{ background: #a8a8a8; }}
+
+        .container {{ overflow-x: auto; overflow-y: hidden; white-space: nowrap; border: 2px solid #e0e0e0; border-radius: 10px; padding: 20px; background-color: #fafafa; box-shadow: inset 0px 0px 10px rgba(0,0,0,0.05); }}
     </style>
     </head>
     <body>
     <div class="container">
-        <svg width="{svg_width}" height="250">
+        <svg width="{svg_width}" height="350">
     """
     
     current_x = 10
     prev_D = baslangic_cap
-    merkez_y = 130 # Telin merkez ekseni
+    merkez_y = 130 
     
-    # 8.00 mm giriş telini çiz
-    h_giris = prev_D * 10 # Görsel ölçekleme (8mm = 80px kalınlık)
-    html_kodu += f'<text x="{current_x}" y="{merkez_y - h_giris/2 - 10}" class="text-wire">Giriş: {prev_D:.2f} mm</text>'
+    h_giris = prev_D * 10 
+    html_kodu += f'<text x="{current_x}" y="{merkez_y - h_giris/2 - 15}" class="text-wire">Giriş: {prev_D:.2f} mm</text>'
     
     for idx, row in df_schedule.iterrows():
         d_out = row['Seçilen Çap (mm)']
         red_oran = row['Kesit Daralması (%)']
         hadde_no = row['Hadde No']
         
-        # Kalınlık hesapları
         h_in = prev_D * 10
         h_out = d_out * 10
         
@@ -54,37 +56,27 @@ def ciz_animasyon(df_schedule, baslangic_cap):
         y_out_top = merkez_y - h_out/2
         y_out_bot = merkez_y + h_out/2
         
-        # 1. Telin Haddeden Önceki Düz Kısmı
         html_kodu += f'<rect x="{current_x}" y="{y_in_top}" width="100" height="{h_in}" class="wire" />'
-        
-        # 2. Telin Hadde İçinde Ezildiği Kısım (Huni şekli)
         html_kodu += f'<polygon points="{current_x+100},{y_in_top} {current_x+140},{y_out_top} {current_x+140},{y_out_bot} {current_x+100},{y_in_bot}" class="wire" />'
-        
-        # 3. PCD Kalıp Çizimi (Dış Çerçeve)
         html_kodu += f'<rect x="{current_x+100}" y="40" width="40" height="180" rx="5" class="die-body" />'
-        # Kalıbın İçindeki Boşluk (Beyaz huni, telin sınırlarıyla aynı)
         html_kodu += f'<polygon points="{current_x+100},{y_in_top} {current_x+140},{y_out_top} {current_x+140},{y_out_bot} {current_x+100},{y_in_bot}" fill="none" stroke="#616161" stroke-width="1" />'
         
-        # 4. Bilgi Etiketleri (Yazılar)
-        html_kodu += f'<text x="{current_x+120}" y="30" class="text-title" text-anchor="middle">Hadde {int(hadde_no)}</text>'
-        html_kodu += f'<text x="{current_x+120}" y="240" class="text-title" text-anchor="middle">-% {red_oran}</text>'
-        html_kodu += f'<text x="{current_x+120}" y="255" class="text-info" text-anchor="middle">PCD Elmas</text>'
+        html_kodu += f'<text x="{current_x+120}" y="28" class="text-title" text-anchor="middle">Hadde {int(hadde_no)}</text>'
         
-        # Çıkan telin güncel çapını yaz
-        html_kodu += f'<text x="{current_x+170}" y="{y_out_top - 10}" class="text-wire" text-anchor="middle">Ø {d_out:.2f}</text>'
+        # Yazıların Y koordinatları aşağıya taşındı ve araları açıldı
+        html_kodu += f'<text x="{current_x+120}" y="250" class="text-title" text-anchor="middle" fill="#d32f2f">-% {red_oran}</text>'
+        html_kodu += f'<text x="{current_x+120}" y="270" class="text-info" text-anchor="middle">PCD Elmas</text>'
         
-        # 5. Telin içindeki hareket efekti (Dashed line)
+        html_kodu += f'<text x="{current_x+170}" y="{y_out_top - 15}" class="text-wire" text-anchor="middle">Ø {d_out:.2f}</text>'
         html_kodu += f'<line x1="{current_x}" y1="{merkez_y}" x2="{current_x+140}" y2="{merkez_y}" class="flow-line" />'
         
-        # Sonraki adıma geç
         current_x += 200
         prev_D = d_out
         
-    # Son Çıkan Nihai Teli Çiz
     h_final = prev_D * 10
     y_final_top = merkez_y - h_final/2
     html_kodu += f'<rect x="{current_x}" y="{y_final_top}" width="100" height="{h_final}" class="wire" />'
-    html_kodu += f'<text x="{current_x+50}" y="{y_final_top - 10}" class="text-wire" text-anchor="middle">Nihai: {prev_D:.2f} mm</text>'
+    html_kodu += f'<text x="{current_x+50}" y="{y_final_top - 15}" class="text-wire" text-anchor="middle">Nihai: {prev_D:.2f} mm</text>'
     html_kodu += f'<line x1="{current_x}" y1="{merkez_y}" x2="{current_x+100}" y2="{merkez_y}" class="flow-line" />'
     
     html_kodu += """
@@ -183,11 +175,11 @@ with col2:
                 
             df_sonuc = hesapla_hadde_serisi(baslangic, hedef, sayi, strateji, df_envanter)
             
-            # --- YENİ EKLENEN ANİMASYON BÖLÜMÜ ---
             st.subheader("⚙️ Proses Animasyonu (Canlı Simülasyon)")
             animasyon_html = ciz_animasyon(df_sonuc, baslangic)
-            # Animasyonu Streamlit içinde göster (Kaydırma çubuğu ile)
-            components.html(animasyon_html, height=300, scrolling=True)
+            
+            # Streamlit çerçeve yüksekliği 300'den 400'e çıkarıldı!
+            components.html(animasyon_html, height=400, scrolling=True)
             
             st.subheader("📊 Hadde Dizilim Tablosu")
             st.dataframe(df_sonuc, use_container_width=True)
