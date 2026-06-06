@@ -1,36 +1,118 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import streamlit.components.v1 as components
 
-# --- Algoritma ---
+# --- Animasyon Motoru (SVG / HTML) ---
+def ciz_animasyon(df_schedule, baslangic_cap):
+    # Çizim alanının genişliği hadde sayısına göre dinamik hesaplanır
+    svg_width = len(df_schedule) * 200 + 150
+    
+    html_kodu = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        .wire {{ fill: #b87333; }} /* Bakır Rengi */
+        .die-body {{ fill: #e0e0e0; stroke: #757575; stroke-width: 2; }} /* PCD Kalıp Gövdesi */
+        .die-hole {{ fill: #ffffff; }} /* Kalıp Deliği */
+        .text-title {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; fill: #1e1e1e; font-weight: bold; }}
+        .text-info {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 11px; fill: #424242; }}
+        .text-wire {{ font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; fill: #b87333; font-weight: bold; }}
+        
+        /* Telin çekilme hareketini veren animasyon */
+        .flow-line {{ stroke: rgba(255,255,255,0.6); stroke-width: 2; stroke-dasharray: 10, 10; animation: flow 0.5s linear infinite; }}
+        @keyframes flow {{ 0% {{ stroke-dashoffset: 20; }} 100% {{ stroke-dashoffset: 0; }} }}
+        
+        .container {{ overflow-x: auto; white-space: nowrap; border: 2px solid #e0e0e0; border-radius: 10px; padding: 20px; background-color: #fafafa; box-shadow: inset 0px 0px 10px rgba(0,0,0,0.05); }}
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <svg width="{svg_width}" height="250">
+    """
+    
+    current_x = 10
+    prev_D = baslangic_cap
+    merkez_y = 130 # Telin merkez ekseni
+    
+    # 8.00 mm giriş telini çiz
+    h_giris = prev_D * 10 # Görsel ölçekleme (8mm = 80px kalınlık)
+    html_kodu += f'<text x="{current_x}" y="{merkez_y - h_giris/2 - 10}" class="text-wire">Giriş: {prev_D:.2f} mm</text>'
+    
+    for idx, row in df_schedule.iterrows():
+        d_out = row['Seçilen Çap (mm)']
+        red_oran = row['Kesit Daralması (%)']
+        hadde_no = row['Hadde No']
+        
+        # Kalınlık hesapları
+        h_in = prev_D * 10
+        h_out = d_out * 10
+        
+        y_in_top = merkez_y - h_in/2
+        y_in_bot = merkez_y + h_in/2
+        y_out_top = merkez_y - h_out/2
+        y_out_bot = merkez_y + h_out/2
+        
+        # 1. Telin Haddeden Önceki Düz Kısmı
+        html_kodu += f'<rect x="{current_x}" y="{y_in_top}" width="100" height="{h_in}" class="wire" />'
+        
+        # 2. Telin Hadde İçinde Ezildiği Kısım (Huni şekli)
+        html_kodu += f'<polygon points="{current_x+100},{y_in_top} {current_x+140},{y_out_top} {current_x+140},{y_out_bot} {current_x+100},{y_in_bot}" class="wire" />'
+        
+        # 3. PCD Kalıp Çizimi (Dış Çerçeve)
+        html_kodu += f'<rect x="{current_x+100}" y="40" width="40" height="180" rx="5" class="die-body" />'
+        # Kalıbın İçindeki Boşluk (Beyaz huni, telin sınırlarıyla aynı)
+        html_kodu += f'<polygon points="{current_x+100},{y_in_top} {current_x+140},{y_out_top} {current_x+140},{y_out_bot} {current_x+100},{y_in_bot}" fill="none" stroke="#616161" stroke-width="1" />'
+        
+        # 4. Bilgi Etiketleri (Yazılar)
+        html_kodu += f'<text x="{current_x+120}" y="30" class="text-title" text-anchor="middle">Hadde {int(hadde_no)}</text>'
+        html_kodu += f'<text x="{current_x+120}" y="240" class="text-title" text-anchor="middle">-% {red_oran}</text>'
+        html_kodu += f'<text x="{current_x+120}" y="255" class="text-info" text-anchor="middle">PCD Elmas</text>'
+        
+        # Çıkan telin güncel çapını yaz
+        html_kodu += f'<text x="{current_x+170}" y="{y_out_top - 10}" class="text-wire" text-anchor="middle">Ø {d_out:.2f}</text>'
+        
+        # 5. Telin içindeki hareket efekti (Dashed line)
+        html_kodu += f'<line x1="{current_x}" y1="{merkez_y}" x2="{current_x+140}" y2="{merkez_y}" class="flow-line" />'
+        
+        # Sonraki adıma geç
+        current_x += 200
+        prev_D = d_out
+        
+    # Son Çıkan Nihai Teli Çiz
+    h_final = prev_D * 10
+    y_final_top = merkez_y - h_final/2
+    html_kodu += f'<rect x="{current_x}" y="{y_final_top}" width="100" height="{h_final}" class="wire" />'
+    html_kodu += f'<text x="{current_x+50}" y="{y_final_top - 10}" class="text-wire" text-anchor="middle">Nihai: {prev_D:.2f} mm</text>'
+    html_kodu += f'<line x1="{current_x}" y1="{merkez_y}" x2="{current_x+100}" y2="{merkez_y}" class="flow-line" />'
+    
+    html_kodu += """
+        </svg>
+    </div>
+    </body>
+    </html>
+    """
+    return html_kodu
+
+# --- Optimizasyon Algoritması ---
 def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
-    # 1. Sütun isimlerini güvenli bul
     cap_col = [col for col in df_envanter.columns if 'çap' in str(col).lower() or 'cap' in str(col).lower()][0]
     adet_col = [col for col in df_envanter.columns if 'adet' in str(col).lower()][0]
     
-    # 2. Excel'deki virgülleri (2,50) noktaya çevirip garanti şekilde sayıya dönüştür
     df_envanter[cap_col] = pd.to_numeric(df_envanter[cap_col].astype(str).str.replace(',', '.'), errors='coerce')
     df_envanter[adet_col] = pd.to_numeric(df_envanter[adet_col], errors='coerce')
-    df_envanter = df_envanter.dropna(subset=[cap_col]) # Boş satırları temizle
+    df_envanter = df_envanter.dropna(subset=[cap_col]) 
     
-    # 3. Stok Sözlüğünü Oluştur
     envanter_gruplu = df_envanter.groupby(cap_col)[adet_col].sum().to_dict()
-    
-    # 4. Teorik Daralma Dağılımını Hesapla
     total_strain = 2 * np.log(baslangic / hedef)
     
-    # Güvenlik subabı: Seçilen stratejiyi küçük harfe çevirip kelime arıyoruz
     str_isim = str(strateji).lower()
-    if "sabit" in str_isim:
-        weights = np.ones(hadde_sayisi)
-    elif "artan" in str_isim:
-        weights = np.linspace(1, hadde_sayisi, hadde_sayisi)
-    else:
-        # "azalan" kelimesi geçerse veya hiçbir şey bulunamazsa varsayılan olarak azalan yap
-        weights = np.linspace(hadde_sayisi, 1, hadde_sayisi)
+    if "sabit" in str_isim: weights = np.ones(hadde_sayisi)
+    elif "artan" in str_isim: weights = np.linspace(1, hadde_sayisi, hadde_sayisi)
+    else: weights = np.linspace(hadde_sayisi, 1, hadde_sayisi)
         
     strains = (weights / weights.sum()) * total_strain
-    
     theoretical = []
     current = baslangic
     for e in strains:
@@ -43,7 +125,6 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
     
     for i in range(hadde_sayisi - 1):
         target = theoretical[i]
-        
         valid_dies = [cap for cap, adet in envanter_gruplu.items() if adet > 0 and cap < current_D and cap > hedef]
         
         if len(valid_dies) == 0:
@@ -53,10 +134,8 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
             valid_pool = np.array(valid_dies)
             idx = (np.abs(valid_pool - target)).argmin()
             chosen_die = valid_pool[idx]
-            kalan_stok = envanter_gruplu[chosen_die]
-            durum = f"Stoktan ({int(kalan_stok)} adet kaldı)"
-            
-            envanter_gruplu[chosen_die] -= 1 # Kullanılanı stoktan düş
+            envanter_gruplu[chosen_die] -= 1 
+            durum = "Stoktan Kullanıldı"
             
         actual_schedule.append((chosen_die, durum, target))
         current_D = chosen_die
@@ -81,14 +160,14 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
 
 # --- Arayüz (UI) ---
 st.set_page_config(page_title="Hadde Tasarım Simülatörü", layout="wide")
-st.title("Tel Çekme: Envanter Odaklı Hadde Dizilimi Simülatörü")
-st.markdown("Doktora tezi proses optimizasyon aracı. Stok miktarını (Adet) dikkate alır.")
+st.title("Tel Çekme: Envanter Odaklı Animasyonlu Simülatör")
+st.markdown("Doktora tezi proses optimizasyon aracı. Telin PCD haddelerden geçişini canlı olarak simüle eder.")
 
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns([1, 3])
 
 with col1:
     st.header("1. Envanteri Yükle")
-    yuklenen_dosya = st.file_uploader("Envanter Dosyasını Seç (.xlsx veya .csv)", type=["xlsx", "csv"])
+    yuklenen_dosya = st.file_uploader("Envanter Dosyası (.xlsx)", type=["xlsx", "csv"])
     
     st.header("2. Parametreler")
     baslangic = st.number_input("Başlangıç Çapı (mm)", value=8.00, step=0.1)
@@ -99,20 +178,21 @@ with col1:
 with col2:
     if yuklenen_dosya is not None:
         try:
-            if yuklenen_dosya.name.endswith('.csv'):
-                df_envanter = pd.read_csv(yuklenen_dosya)
-            else:
-                df_envanter = pd.read_excel(yuklenen_dosya)
+            if yuklenen_dosya.name.endswith('.csv'): df_envanter = pd.read_csv(yuklenen_dosya)
+            else: df_envanter = pd.read_excel(yuklenen_dosya)
                 
             df_sonuc = hesapla_hadde_serisi(baslangic, hedef, sayi, strateji, df_envanter)
             
-            st.header("Sonuç ve Kesit Daralma Grafiği")
-            st.line_chart(df_sonuc.set_index("Hadde No")["Seçilen Çap (mm)"])
+            # --- YENİ EKLENEN ANİMASYON BÖLÜMÜ ---
+            st.subheader("⚙️ Proses Animasyonu (Canlı Simülasyon)")
+            animasyon_html = ciz_animasyon(df_sonuc, baslangic)
+            # Animasyonu Streamlit içinde göster (Kaydırma çubuğu ile)
+            components.html(animasyon_html, height=300, scrolling=True)
             
-            st.header("Hadde Dizilim Tablosu")
+            st.subheader("📊 Hadde Dizilim Tablosu")
             st.dataframe(df_sonuc, use_container_width=True)
             
         except Exception as e:
-            st.error(f"Uygulamada bir hata oluştu. Hata detayı: {e}")
+            st.error(f"Uygulamada bir hata oluştu: {e}")
     else:
-        st.info("👈 Lütfen sol taraftan 'PCD Hadde Envanter' Excel dosyanızı yükleyin.")
+        st.info("👈 Lütfen sol taraftan 'PCD Hadde Envanter' dosyanızı yükleyin.")
