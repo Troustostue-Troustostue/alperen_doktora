@@ -152,8 +152,8 @@ def hesapla_hadde_serisi(baslangic, hedef, hadde_sayisi, strateji, df_envanter):
 
 # --- Arayüz (UI) ---
 st.set_page_config(page_title="Hadde Tasarım Simülatörü", layout="wide")
-st.title("Tel Çekme: Envanter Odaklı Animasyonlu Simülatör")
-st.markdown("Doktora tezi proses optimizasyon aracı. Telin PCD haddelerden geçişini canlı olarak simüle eder.")
+st.title("Envanter Bazlı Tel Çekme Hat Tasarım Simülatörü")
+st.markdown("Simülasyon Programı")
 
 col1, col2 = st.columns([1, 3])
 
@@ -163,9 +163,9 @@ with col1:
     
     st.header("2. Parametreler")
     baslangic = st.number_input("Başlangıç Çapı (mm)", value=8.00, step=0.1)
-    hedef = st.selectbox("Hedef Nihai Çap (mm)", [2.80, 2.50, 2.10], index=1)
-    sayi = st.slider("Ara Hadde Sayısı", min_value=4, max_value=14, value=9)
-    strateji = st.selectbox("Daralma Stratejisi", ["Azalan Daralma", "Sabit Daralma", "Artan Daralma"])
+    hedef = st.selectbox("Nihai Çap (mm)", [2.80, 2.50, 2.10], index=1)
+    sayi = st.slider("Hadde Sayısı", min_value=4, max_value=14, value=9)
+    strateji = st.selectbox("Alan Azaltma Stratejisi", ["Azalan Daralma", "Sabit Daralma", "Artan Daralma"])
 
 with col2:
     if yuklenen_dosya is not None:
@@ -175,7 +175,7 @@ with col2:
                 
             df_sonuc = hesapla_hadde_serisi(baslangic, hedef, sayi, strateji, df_envanter)
             
-            st.subheader("⚙️ Proses Animasyonu (Canlı Simülasyon)")
+            st.subheader("⚙️ Proses Animasyonu")
             animasyon_html = ciz_animasyon(df_sonuc, baslangic)
             
             # Streamlit çerçeve yüksekliği 300'den 400'e çıkarıldı!
