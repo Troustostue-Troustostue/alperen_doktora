@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katı Çözelti Sertleşmesi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; }
+        canvas { 
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); 
+            border-radius: 12px; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(56, 189, 248, 0.1);
+            border: 1px solid #334155;
+            cursor: crosshair;
+        }
+        .slider-container { width: 100%; margin: 10px 0; }
+        input[type=range] { 
+            -webkit-appearance: none;
+            width: 100%; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px #10b981;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 4px;
+        }
+        .glow-text { text-shadow: 0 0 10px currentColor; }
+        .math-font { font-family: 'Cambria Math', 'Times New Roman', serif; }
+        
+        .metric-card { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .pulse-bg { animation: pulseRed 2s infinite; }
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen justify-center">
+
+    <div class="max-w-6xl w-full bg-slate-900 p-6 md:p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-slate-700">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 border-b border-slate-700 pb-6 relative">
+            <div class="absolute -top-4 -left-4 w-20 h-20 bg-emerald-500 rounded-full blur-[80px] opacity-30"></div>
+            <div class="absolute -top-4 -right-4 w-20 h-20 bg-blue-500 rounded-full blur-[80px] opacity-30"></div>
+            
+            <div class="inline-block bg-slate-800 border border-slate-600 text-emerald-400 text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-widest shadow-lg">Arş. Gör. Alperen SOYER</div>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-2 glow-text">Katı Çözelti Sertleşmesi</h1>
+            <p class="text-slate-400 font-medium text-lg mt-2">Magnezyum (Mg) İlavesinin Bakır (Cu) Matrisi ile Çekme Dayanımı ve Elektriksel İletkenlik Üzerindeki Etkisi (Ø 2.10 mm Tel İçin)</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Sol Panel: Simülasyon -->
+            <div class="lg:col-span-8 relative flex flex-col">
+                <div class="relative w-full flex justify-center">
+                    <canvas id="latticeCanvas" width="700" height="400" class="w-full h-auto object-contain"></canvas>
+                    <div class="absolute top-4 left-6 text-xs font-bold tracking-widest uppercase text-slate-300 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-slate-700">
+                        FCC Kristal Kafesi (111) Düzlemi
+                    </div>
+                    <div class="absolute bottom-4 right-6 flex gap-4 text-xs font-bold bg-black/50 px-3 py-2 rounded backdrop-blur-sm border border-slate-700">
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-orange-400 mr-2 shadow-[0_0_5px_#f97316]"></span> Bakır (Cu) R=1.28 Å (angstroms)</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-emerald-400 mr-2 shadow-[0_0_8px_#10b981]"></span> Magnezyum (Mg) R=1.6 Å (angstroms)</div>
+                    </div>
+                </div>
+
+                <!-- Slider Kontrolü -->
+                <div class="mt-6 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-inner">
+                    <div class="flex justify-between items-end mb-4">
+                        <label class="font-bold text-slate-300 text-lg">Magnezyum (Mg) Oranı:</label>
+                        <span id="mgDisplay" class="text-emerald-400 text-3xl font-black glow-text">% 0.00</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="mgSlider" min="0" max="0.5" step="0.01" value="0.00">
+                    </div>
+                    <div class="flex justify-between text-xs font-bold text-slate-500 mt-2 uppercase tracking-wider">
+                        <span>Saf Bakır (OFC)</span>
+                        <span>CuMg0.3</span>
+                        <span>CuMg0.4</span>
+                        <span>CuMg0.5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ Panel: Metrikler ve Teori -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                
+                <!-- Çekme Dayanımı Kartı -->
+                <div id="strengthCard" class="metric-card bg-slate-800/80 p-6 rounded-2xl border border-red-500/30 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent"></div>
+                    <span class="text-xs font-bold text-red-400 uppercase tracking-widest mb-1 z-10">Nihai Çekme Dayanımı</span>
+                    <div class="flex items-baseline z-10">
+                        <span id="valMukavemet" class="text-5xl font-black text-red-500 tracking-tighter glow-text math-font">420.0</span>
+                        <span class="text-lg font-bold text-red-400 ml-2">MPa</span>
+                    </div>
+                    <div class="mt-2 text-[10px] text-slate-400 z-10">Δσ ∝ √C (Magnezyum Konsantrasyonu)</div>
+                </div>
+
+                <!-- Kafes Gerinimi Kartı -->
+                <div class="metric-card bg-slate-800/80 p-6 rounded-2xl border border-indigo-500/30 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent"></div>
+                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1 z-10">Kafes Çarpılması (Lattice Strain)</span>
+                    <div class="flex items-baseline z-10">
+                        <span id="valStrain" class="text-4xl font-black text-indigo-400 tracking-tighter glow-text math-font">0.00</span>
+                        <span class="text-lg font-bold text-indigo-300 ml-2">ε</span>
+                    </div>
+                    <div class="mt-2 text-[10px] text-slate-400 text-center z-10">Hacimsel Misfit (Uyumsuzluk) Etkisi<br>(R<sub>Mg</sub> > R<sub>Cu</sub>)</div>
+                </div>
+
+                <!-- İletkenlik Kartı -->
+                <div class="metric-card bg-slate-800/80 p-6 rounded-2xl border border-amber-500/30 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-md">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent"></div>
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1 z-10">Elektriksel İletkenlik</span>
+                    <div class="flex items-baseline z-10">
+                        <span id="valIletkenlik" class="text-4xl font-black text-amber-400 tracking-tighter glow-text math-font">58.00</span>
+                        <span class="text-lg font-bold text-amber-300 ml-2">MS/m</span>
+                    </div>
+                    <div class="mt-2 text-[10px] text-slate-400 z-10">Empürite Elektron Saçılması</div>
+                </div>
+
+                <!-- Teori Kutusu -->
+                <div class="mt-auto bg-slate-800 p-5 rounded-xl border border-slate-600 text-sm">
+                    <h3 class="text-emerald-400 font-bold mb-2 border-b border-slate-700 pb-1"><i class="fa-solid fa-graduation-cap mr-2"></i>Tezin Özü (Fleischer Mekanizması)</h3>
+                    <p id="teoriMetin" class="text-slate-300 leading-relaxed text-justify">
+                        Saf bakır matrisindeyiz. Atom yarıçapları homojendir (1.28 Å (angstroms)), kafeste iç gerilim yoktur. Dislokasyonlar malzemenin içinde kolayca kayabildiği için çekme dayanımı düşüktür (~420 MPa). Elektronlar engelsiz akar.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('latticeCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('mgSlider');
+        
+        // Elementler
+        const mgDisplay = document.getElementById('mgDisplay');
+        const valMukavemet = document.getElementById('valMukavemet');
+        const valStrain = document.getElementById('valStrain');
+        const valIletkenlik = document.getElementById('valIletkenlik');
+        const teoriMetin = document.getElementById('teoriMetin');
+        const strengthCard = document.getElementById('strengthCard');
+
+        // Kafes (Lattice) Ayarları
+        const rows = 12;
+        const cols = 22;
+        const spacingX = 30;
+        const spacingY = 26; // Hexagonal/FCC 111 plane look
+        let atoms = [];
+
+        // Başlangıç atomlarını oluştur (Hepsi Cu)
+        function initAtoms() {
+            atoms = [];
+            const startX = (canvas.width - (cols * spacingX)) / 2;
+            const startY = (canvas.height - (rows * spacingY)) / 2;
+
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    // Her satırda bir kayma (Hexagonal dizilim efekti)
+                    let offsetX = (r % 2 === 0) ? 0 : spacingX / 2;
+                    atoms.push({
+                        id: r*cols + c,
+                        baseX: startX + c * spacingX + offsetX,
+                        baseY: startY + r * spacingY,
+                        x: startX + c * spacingX + offsetX,
+                        y: startY + r * spacingY,
+                        type: 'Cu', // Başlangıçta hepsi Cu
+                        radius: 5,
+                        strain: 0
+                    });
+                }
+            }
+        }
+        initAtoms();
+
+        // Dislokasyon çizgisi simülasyonu
+        let dislocationY = 0;
+        let dislocationPoints = [];
+        for(let i=0; i<=canvas.width; i+=10) dislocationPoints.push({x: i, y: 0, baseY: 0});
+
+        // Termomekanik Hesaplamalar (Fleischer Solid Solution Modeli: Δσ ∝ √c)
+        // Saf Cu (2.10 mm SPD) -> 420 MPa
+        // CuMg0.4 (2.10 mm SPD) -> 710 MPa
+        // 710 = 420 + k * sqrt(0.4) => k ≈ 458.5
+        function getTensileStrength(mgPercent) {
+            return 420 + (458.5 * Math.sqrt(mgPercent));
+        }
+
+        function getConductivity(mgPercent) {
+            // İletkenlik matthiessen kuralına göre düşer
+            return 58.00 - (mgPercent * 40.1); 
+        }
+
+        // Ana Güncelleme Döngüsü
+        function updateSimulation() {
+            let mg = parseFloat(slider.value);
+            
+            // Metinleri Güncelle
+            mgDisplay.innerText = "% " + mg.toFixed(2);
+            
+            // Rakam Animasyonu
+            valMukavemet.innerText = getTensileStrength(mg).toFixed(1);
+            valStrain.innerText = (mg * 0.12).toFixed(3); // Sembolik strain hesabı
+            valIletkenlik.innerText = getConductivity(mg).toFixed(2);
+
+            // Teori Metni
+            if (mg === 0) {
+                teoriMetin.innerHTML = "Saf bakır matrisindeyiz. Atom yarıçapları homojendir, kafeste iç gerilim yoktur. Dislokasyonlar malzemenin içinde kolayca kayabildiği için çekme dayanımı düşüktür. İletkenlik maksimumdadır.";
+                strengthCard.classList.remove('pulse-bg');
+            } else if (mg > 0 && mg < 0.3) {
+                teoriMetin.innerHTML = "Magnezyum (Mg) atomları, Cu kafesinde <strong>yer-alan</strong> katı çözeltisi oluşturmaya başladı. Mg atomları Cu'dan büyük (1.6 Å (angstroms) > 1.28 Å (angstroms)) olduğu için kafesi çarptırarak iç gerinim yaratır.";
+                strengthCard.classList.remove('pulse-bg');
+            } else if (mg >= 0.3 && mg <= 0.5) {
+                teoriMetin.innerHTML = "<strong>Doktora Çalışması Alaşımı Bölgesi (CuMg0.4):</strong> Yüksek konsantrasyonlu Mg, kafeste devasa gerinim alanları oluşturur (Cottrell Atmosferleri). Bu alanlar hareket halindeki dislokasyonları kilitler. Bu sayede dayanım 710+ MPa seviyelerine çıkar.";
+                strengthCard.classList.add('pulse-bg');
+            }
+
+            // Kafesteki Mg atomlarını ayarla (rastgele ama orana göre)
+            // Toplam atom: ~264. %0.5 için max 20 atom Mg olsun (Görsellik için abartıldı)
+            let targetMgCount = Math.floor((mg / 0.5) * 25); 
+            
+            // Sıfırla
+            atoms.forEach(a => { a.type = 'Cu'; a.radius = 5; a.strain = 0; });
+            
+            // Rastgele Mg seç
+            let shuffledIndices = Array.from(Array(atoms.length).keys()).sort(() => 0.5 - Math.random());
+            for(let i=0; i<targetMgCount; i++) {
+                let a = atoms[shuffledIndices[i]];
+                a.type = 'Mg';
+                a.radius = 8; // Mg daha büyük
+                a.strain = 1.0;
+            }
+
+            // Çevredeki Cu atomlarına gerinim (strain) uygula
+            atoms.forEach(cu => {
+                if(cu.type === 'Mg') return;
+                let maxStrain = 0;
+                atoms.filter(a => a.type === 'Mg').forEach(mgAtom => {
+                    let dx = cu.baseX - mgAtom.baseX;
+                    let dy = cu.baseY - mgAtom.baseY;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 50) {
+                        maxStrain = Math.max(maxStrain, 1 - (dist/50));
+                        // Pozisyonu hafif dışarı it (Kafes Çarpılması)
+                        let force = (50 - dist) * 0.15;
+                        cu.x = cu.baseX + (dx/dist)*force;
+                        cu.y = cu.baseY + (dy/dist)*force;
+                    }
+                });
+                if(maxStrain === 0) { cu.x = cu.baseX; cu.y = cu.baseY; }
+                cu.strain = maxStrain;
+            });
+        }
+
+        // Animasyon Çizimi
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Gerinim (Strain) Alanlarını Çiz (Mg etrafındaki parlamalar)
+            atoms.filter(a => a.type === 'Mg').forEach(a => {
+                let grad = ctx.createRadialGradient(a.x, a.y, a.radius, a.x, a.y, 45);
+                grad.addColorStop(0, 'rgba(16, 185, 129, 0.4)'); // Zümrüt yeşili
+                grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, 45, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // Atom Bağlarını Çiz (Görsel Zenginlik)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for(let r=0; r<rows-1; r++) {
+                for(let c=0; c<cols-1; c++) {
+                    let a1 = atoms[r*cols + c];
+                    let a2 = atoms[r*cols + c + 1];
+                    let a3 = atoms[(r+1)*cols + c];
+                    ctx.beginPath(); ctx.moveTo(a1.x, a1.y); ctx.lineTo(a2.x, a2.y); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(a1.x, a1.y); ctx.lineTo(a3.x, a3.y); ctx.stroke();
+                }
+            }
+
+            // Atomları Çiz
+            atoms.forEach(a => {
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, a.radius, 0, Math.PI*2);
+                if(a.type === 'Mg') {
+                    ctx.fillStyle = '#10b981'; // Yeşil Mg
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#34d399';
+                } else {
+                    // Cu atomu çarpılmışsa (strain varsa) rengi kızıla döner
+                    let r = 249, g = 115 - (a.strain*50), b = 22;
+                    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    ctx.shadowBlur = a.strain > 0 ? 5 : 0;
+                    ctx.shadowColor = '#ef4444';
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0; // Reset
+            });
+
+            // Dislokasyon Çizgisi (Yukarıdan aşağı inen kuvvet)
+            dislocationY += 1.5;
+            if(dislocationY > canvas.height + 50) dislocationY = -50;
+
+            ctx.beginPath();
+            ctx.moveTo(dislocationPoints[0].x, dislocationY);
+            for(let i=1; i<dislocationPoints.length; i++) {
+                let p = dislocationPoints[i];
+                let bowOffset = 0;
+                
+                // Mg atomlarına (engellere) takılma (Bowing effect)
+                atoms.filter(a => a.type === 'Mg').forEach(mg => {
+                    let dx = p.x - mg.x;
+                    let dy = dislocationY - mg.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 60 && dy > 0) { // Dislokasyon atomu geçerken takılır
+                        bowOffset -= (60 - dist) * 0.8; // Geriye doğru esneme (Orowan bowing)
+                    }
+                });
+
+                ctx.lineTo(p.x, dislocationY + bowOffset);
+            }
+            ctx.strokeStyle = '#38bdf8'; // Parlak mavi dislokasyon çizgisi
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#0ea5e9';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(animate);
+        }
+
+        slider.addEventListener('input', updateSimulation);
+        updateSimulation(); // İlk yükleme
+        animate(); // Animasyonu başlat
+
+    </script>
+</body>
+</html>

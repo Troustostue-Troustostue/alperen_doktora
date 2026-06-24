@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elektron Saçılımı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
+        canvas { 
+            background: linear-gradient(90deg, #0f172a 0%, #020617 100%); 
+            border-radius: 8px; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+            border: 2px solid #334155;
+        }
+        .slider-container { width: 100%; margin: 20px 0; }
+        input[type=range] { width: 100%; accent-color: #ef4444; cursor: pointer; }
+        .math-font { font-family: 'Cambria Math', 'Times New Roman', serif; }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-slate-800 flex flex-col items-center">
+
+    <div class="max-w-5xl w-full bg-white p-6 rounded-2xl shadow-2xl border border-slate-200">
+        
+        <div class="text-center mb-6 border-b pb-4">
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Arş. Gör. Alperen SOYER</h1>
+            <p class="text-slate-500 mt-2 font-medium">CuMg0.4 Alaşımı Tel Çekme Prosesi (Taylor & Hall-Petch)</p>
+        </div>
+
+        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 mb-6 shadow-inner">
+            <div class="flex justify-between items-end mb-2">
+                <label class="font-bold text-slate-700 text-lg">Güncel Tel Çapı (Deformasyon): <span id="diaDisplay" class="text-red-600 text-2xl ml-2">20.00 mm</span></label>
+            </div>
+            <div class="slider-container">
+                <input type="range" id="diameterSlider" min="2.1" max="20" step="0.05" value="20" dir="rtl">
+            </div>
+            <div class="flex justify-between text-xs font-bold text-slate-400 mt-1">
+                <span>Tavlı Döküm Yapı (20 mm)</span>
+                <span>Aşırı Deformasyon Bölgesi (2.10 mm)</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200 flex flex-col items-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-indigo-200 text-indigo-800 text-[10px] px-2 py-1 rounded-bl-lg font-bold">KAFES KUSURU</div>
+                <span class="text-xs font-bold text-indigo-800 uppercase tracking-widest mt-2">Dislokasyon Yoğunluğu (ρ)</span>
+                <span id="rhoDisplay" class="text-3xl font-black text-indigo-600 mt-2 math-font">1.20 × 10¹¹ m⁻²</span>
+            </div>
+            
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200 flex flex-col items-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-red-200 text-red-800 text-[10px] px-2 py-1 rounded-bl-lg font-bold">MEKANİK</div>
+                <span class="text-xs font-bold text-red-800 uppercase tracking-widest mt-2">Çekme Dayanımı (σ)</span>
+                <span id="strengthDisplay" class="text-3xl font-black text-red-600 mt-2 math-font">230 MPa</span>
+            </div>
+            
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 flex flex-col items-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-amber-200 text-amber-800 text-[10px] px-2 py-1 rounded-bl-lg font-bold">ELEKTRİKSEL</div>
+                <span class="text-xs font-bold text-amber-800 uppercase tracking-widest mt-2">İletkenlik</span>
+                <span id="condDisplay" class="text-3xl font-black text-amber-500 mt-2 math-font">46.10 mS/m</span>
+            </div>
+        </div>
+
+        <div class="relative w-full flex justify-center mb-6">
+            <canvas id="simCanvas" width="850" height="250"></canvas>
+            <div class="absolute top-2 left-4 text-xs font-bold text-blue-300 opacity-80 tracking-widest">ELEKTRON AKIŞI ➔</div>
+            <div id="heatWarning" class="absolute top-2 right-4 text-sm font-bold text-orange-400 opacity-0 transition-opacity duration-500 bg-orange-900/50 px-3 py-1 rounded border border-orange-500/50">
+                <i class="fa-solid fa-fire mr-1"></i> Adyabatik Şok & Yutulma (Annihilation) Aktif!
+            </div>
+        </div>
+
+        <div class="bg-slate-800 text-slate-200 p-5 rounded-xl border border-slate-700 grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-blue-400 font-bold mb-3 uppercase tracking-wider text-sm border-b border-slate-600 pb-1"><i class="fa-solid fa-calculator mr-2"></i>Teorik Altyapı Denklemi</h3>
+                <div class="text-center bg-slate-900 p-3 rounded-lg border border-slate-700 shadow-inner">
+                    <div class="text-xl math-font text-white">σ<sub>toplam</sub> = σ₀ + k<sub>y</sub>d<sup>-1/2</sup> + M·α·G·b·√<span class="text-indigo-400">ρ</span></div>
+                    <div class="text-[10px] text-slate-400 mt-2 uppercase tracking-wide">Taylor & Hall-Petch Sentez Modeli</div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-emerald-400 font-bold mb-3 uppercase tracking-wider text-sm border-b border-slate-600 pb-1"><i class="fa-solid fa-vial mr-2"></i>CuMg0.4 Fiziksel Sabitleri</h3>
+                <div class="grid grid-cols-2 gap-3 text-xs font-mono text-slate-300 bg-slate-900 p-3 rounded-lg border border-slate-700">
+                    <div class="flex justify-between border-b border-slate-700 pb-1"><span>Taylor (M):</span> <span class="text-white font-bold">3.06</span></div>
+                    <div class="flex justify-between border-b border-slate-700 pb-1"><span>Modül (G):</span> <span class="text-white font-bold">48 GPa</span></div>
+                    <div class="flex justify-between pb-1"><span>Burgers (b):</span> <span class="text-white font-bold">0.256 nm</span></div>
+                    <div class="flex justify-between pb-1"><span>Sabit (α):</span> <span class="text-white font-bold">~0.3</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <p id="descDisplay" class="text-slate-600 text-sm font-medium italic"></p>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('diameterSlider');
+        const heatWarning = document.getElementById('heatWarning');
+        
+        let particles = [];
+        let obstacles = [];
+
+        function getStrength(d) { return 710 - ((d - 2.1) / (20 - 2.1)) * (710 - 230); }
+        function getConductivity(d) { 
+            if(d > 2.5) return 41.9 + ((d - 2.1) / (20 - 2.1)) * (46.1 - 41.9); 
+            else return 41.9 + ((d - 2.1) / (0.4)) * 0.54; // 2.5'te min, 2.1'de hafif rebound
+        }
+        
+        // Bilimsel gösterim dönüştürücü (10 üzeri x formatı için)
+        function formatSci(val) {
+            let exp = Math.floor(Math.log10(val));
+            let coeff = val / Math.pow(10, exp);
+            // HTML sup etiketi ile üslü sayı oluşturuyoruz
+            return `${coeff.toFixed(2)} × 10<sup>${exp}</sup> m<sup>-2</sup>`;
+        }
+
+        class Electron {
+            constructor() { this.reset(); this.x = Math.random() * canvas.width; }
+            reset() {
+                this.x = 0; this.y = 10 + Math.random() * (canvas.height - 20);
+                this.baseVx = 4.5 + Math.random() * 2.5; this.vx = this.baseVx;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.color = `hsl(210, 100%, ${70 + Math.random()*30}%)`;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                for(let obs of obstacles) {
+                    let dx = this.x - obs.x; let dy = this.y - obs.y;
+                    if(Math.sqrt(dx*dx + dy*dy) < obs.radius + 2) {
+                        this.vx = (Math.random() * 1.5) + 0.1; 
+                        this.vy = (Math.random() - 0.5) * 5;
+                    }
+                }
+                if(this.y < 5 || this.y > canvas.height - 5) this.vy *= -1;
+                if(this.x > canvas.width) this.reset();
+                if(this.vx < this.baseVx) this.vx += 0.08;
+                if(this.vy > 0.5 || this.vy < -0.5) this.vy *= 0.90; 
+            }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, 2.5, 0, Math.PI*2);
+                ctx.fillStyle = this.color; ctx.fill();
+            }
+        }
+
+        for(let i = 0; i < 220; i++) particles.push(new Electron());
+
+        function updateSimulation() {
+            let d = parseFloat(slider.value);
+            
+            document.getElementById('diaDisplay').innerText = d.toFixed(2) + " mm";
+            document.getElementById('strengthDisplay').innerText = getStrength(d).toFixed(0) + " MPa";
+            document.getElementById('condDisplay').innerText = getConductivity(d).toFixed(2) + " mS/m";
+
+            let numObstacles;
+            let currentRho;
+
+            if (d > 2.5) {
+                // NORMAL PEKLEŞME BÖLGESİ
+                let ratio = (20 - d) / (20 - 2.5);
+                numObstacles = Math.floor(ratio * 600); // Max 600 engel
+                
+                // Dislokasyon yoğunluğunu üslü olarak (logaritmik) artır
+                // 20 mm'de 1.2 x 10^11  -->  2.5 mm'de 9.8 x 10^14
+                let expBase = 11.08 + ratio * (14.99 - 11.08); 
+                currentRho = Math.pow(10, expBase);
+                
+                heatWarning.style.opacity = 0;
+                document.getElementById('descDisplay').innerText = "Deformasyon kaynaklı dislokasyon (ρ) artışı Taylor denklemine uygun olarak malzemenin mukavemetini yükseltmekte; ancak elektron saçılmasını artırarak iletkenliği düşürmektedir.";
+            } else {
+                // REBOUND BÖLGESİ (Adyabatik Yutulma)
+                let reboundRatio = (2.5 - d) / (2.5 - 2.1); 
+                numObstacles = 600 - Math.floor(reboundRatio * 250); // Engeller eriyor
+                
+                // Dislokasyonlar 9.8 x 10^14'ten 6.3 x 10^14'e düşüyor! (Annihilation)
+                let expBase = 14.99 - reboundRatio * (14.99 - 14.80); 
+                currentRho = Math.pow(10, expBase);
+                
+                heatWarning.style.opacity = 1;
+                document.getElementById('descDisplay').innerHTML = "<strong>Dislokasyon yoğunluğu düşüyor</strong> ancak dinamik rekristalizasyonla oluşan ince tane sınırları (Hall-Petch) mukavemet artışını sağladı.";
+            }
+            
+            document.getElementById('rhoDisplay').innerHTML = formatSci(currentRho);
+            
+            obstacles = [];
+            for(let i = 0; i < numObstacles; i++){
+                obstacles.push({
+                    x: Math.random() * (canvas.width - 40) + 20,
+                    y: Math.random() * canvas.height,
+                    radius: 2 + Math.random() * 4,
+                    rotation: Math.random() * Math.PI
+                });
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let d = parseFloat(slider.value);
+            ctx.fillStyle = d <= 2.5 ? '#f97316' : '#ef4444'; // Toparlanmada turuncu/ateş
+
+            for(let obs of obstacles) {
+                ctx.save(); ctx.translate(obs.x, obs.y); ctx.rotate(obs.rotation);
+                ctx.beginPath();
+                ctx.moveTo(-obs.radius, -obs.radius/2); ctx.lineTo(obs.radius, -obs.radius);
+                ctx.lineTo(obs.radius/2, obs.radius); ctx.lineTo(-obs.radius, obs.radius/2);
+                ctx.fill(); ctx.restore();
+            }
+            for(let p of particles) { p.update(); p.draw(); }
+            requestAnimationFrame(animate);
+        }
+
+        slider.addEventListener('input', updateSimulation);
+        updateSimulation(); animate();
+    </script>
+</body>
+</html>
