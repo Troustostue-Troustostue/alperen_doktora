@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="tr"><head><script src="/_sdk/telemetry_sdk.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadde Serileri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        .die-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+        }
+        .wire {
+            position: absolute;
+            background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706);
+            left: 0;
+            right: 0;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        .die {
+            position: relative;
+            z-index: 10;
+            width: 40px;
+            height: 80px;
+            background: linear-gradient(to right, #475569, #1e293b, #475569);
+            border-radius: 4px;
+            border: 2px solid #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .die::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 100%;
+            background: #000;
+            clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%);
+        }
+        .highlight-row { animation: pulseBg 2s infinite; }
+        @keyframes pulseBg {
+            0% { background-color: rgba(239, 68, 68, 0.1); }
+            50% { background-color: rgba(239, 68, 68, 0.2); }
+            100% { background-color: rgba(239, 68, 68, 0.1); }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.relative{position:relative}.z-10{z-index:10}.mb-3{margin-bottom:0.75rem}.mb-8{margin-bottom:2rem}.mr-3{margin-right:0.75rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mb-2{margin-bottom:0.5rem}.block{display:block}.flex{display:flex}.grid{display:grid}.h-20{height:5rem}.w-full{width:100%}.min-w-\[800px\]{min-width:800px}.max-w-5xl{max-width:64rem}.flex-grow{flex-grow:1}.scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-100{--tw-scale-x:1;--tw-scale-y:1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-black\/10{border-color:rgb(0 0 0 / 0.1)}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-emerald-400{--tw-border-opacity:1;border-color:rgb(52 211 153 / var(--tw-border-opacity, 1))}.border-emerald-500{--tw-border-opacity:1;border-color:rgb(16 185 129 / var(--tw-border-opacity, 1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.border-slate-500{--tw-border-opacity:1;border-color:rgb(100 116 139 / var(--tw-border-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/50{background-color:rgb(255 255 255 / 0.5)}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245 / var(--tw-bg-opacity, 1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pb-2{padding-bottom:0.5rem}.pb-4{padding-bottom:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.tracking-tight{letter-spacing:-0.025em}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-emerald-900{--tw-text-opacity:1;color:rgb(6 78 59 / var(--tw-text-opacity, 1))}.text-orange-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-red-700{--tw-text-opacity:1;color:rgb(185 28 28 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.opacity-70{opacity:0.7}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[0_0_15px_rgba\(16\2c 185\2c 129\2c 0\.5\)\]{--tw-shadow:0 0 15px rgba(16,185,129,0.5);--tw-shadow-colored:0 0 15px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-500{transition-duration:500ms}.hover\:bg-slate-300:hover{--tw-bg-opacity:1;background-color:rgb(203 213 225 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}@media (min-width: 768px){.md\:p-8{padding:2rem}}@media (min-width: 1024px){.lg\:col-span-2{grid-column:span 2 / span 2}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}}</style><script src="/_sdk/resizing_sdk.js"></script></head>
+<body class="p-4 md:p-8 flex flex-col items-center" data-html-import-id="html-import-0" data-template-id="__page-root" style="background: rgb(248, 250, 252);">
+
+    <div class="max-w-5xl w-full bg-white p-6 rounded-2xl shadow-2xl border border-slate-200 canva-container" data-html-import-id="html-import-1" data-template-id="div-0" style="background: rgb(255, 255, 255);">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 border-b pb-4" data-html-import-id="html-import-2">
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight canva-text" data-html-import-id="html-import-3" data-template-id="h1-1" style="color: rgb(30, 41, 59); font-weight: 800; font-size: 30px;">Niehoff MSM 85 (413/415) Hadde Serileri</h1>
+            <p class="text-slate-500 mt-2 font-medium canva-text" data-html-import-id="html-import-4" data-template-id="p-2" style="color: rgb(100, 116, 139); font-weight: 500;">Kalıp Redüksiyon Oranlarının ve Hadde Serilerinin Etkisi</p>
+        </div>
+
+        <!-- Kontrol Butonları -->
+        <div class="flex justify-center gap-4 mb-8" data-html-import-id="html-import-5">
+            <button onclick="loadData('2.80')" id="btn-2.80" class="px-6 py-3 rounded-lg font-bold transition-all bg-slate-200 text-slate-600 hover:bg-slate-300 transform scale-100 canva-button" data-html-import-id="html-import-6" data-template-id="button-3" style="background: rgb(226, 232, 240); color: rgb(71, 85, 105); font-family: &quot;Segoe UI&quot;; font-weight: 700; font-size: 16px;">Ø 2.80 mm Üretimi</button>
+            <button onclick="loadData('2.50')" id="btn-2.50" class="px-6 py-3 rounded-lg font-bold transition-all bg-slate-200 text-slate-600 hover:bg-slate-300 transform scale-100 canva-button" data-html-import-id="html-import-7" data-template-id="button-4" style="background: rgb(226, 232, 240); color: rgb(71, 85, 105); font-family: &quot;Segoe UI&quot;; font-weight: 700; font-size: 16px;">Ø 2.50 mm Üretimi</button>
+            <button onclick="loadData('2.10')" id="btn-2.10" class="px-6 py-3 rounded-lg font-bold transition-all bg-emerald-600 text-white shadow-lg transform scale-105 canva-button" data-html-import-id="html-import-8" data-template-id="button-5" style="background: rgb(5, 150, 105); color: rgb(255, 255, 255); font-family: &quot;Segoe UI&quot;; font-weight: 700; font-size: 16px;">Ø 2.10 mm Üretimi</button>
+        </div>
+
+        <!-- Görsel Animasyon Alanı -->
+        <div class="bg-slate-900 rounded-xl p-6 mb-8 overflow-x-auto border border-slate-700 shadow-inner canva-container" data-html-import-id="html-import-9" data-template-id="div-6" style="background: rgb(15, 23, 42);">
+            <div class="flex items-center min-w-[800px] justify-between relative px-4" id="visualContainer" data-html-import-id="html-import-10">
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-11">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-12" data-template-id="span-7" style="color: rgb(148, 163, 184); font-size: 10px;">8.00</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-13"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-14">
+                            <div class="wire" style="height: 20.549999999999997px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-15"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-16">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-17" data-template-id="span-8" style="color: rgb(148, 163, 184); font-size: 10px;">6.85</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-18"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-19">
+                            <div class="wire" style="height: 17.298000000000002px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-20"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-21">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-22" data-template-id="span-9" style="color: rgb(148, 163, 184); font-size: 10px;">5.77</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-23"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-24">
+                            <div class="wire" style="height: 14.544px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-25"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-26">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-27" data-template-id="span-10" style="color: rgb(148, 163, 184); font-size: 10px;">4.85</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-28"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-29">
+                            <div class="wire" style="height: 12.225000000000001px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-30"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-31">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-32" data-template-id="span-11" style="color: rgb(148, 163, 184); font-size: 10px;">4.08</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-33"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-34">
+                            <div class="wire" style="height: 10.407px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-35"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-36">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-37" data-template-id="span-12" style="color: rgb(148, 163, 184); font-size: 10px;">3.47</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-38"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-39">
+                            <div class="wire" style="height: 8.955px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-40"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-41">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-42" data-template-id="span-13" style="color: rgb(148, 163, 184); font-size: 10px;">2.98</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-43"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-44">
+                            <div class="wire" style="height: 7.7669999999999995px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-45"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-46">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-47" data-template-id="span-14" style="color: rgb(148, 163, 184); font-size: 10px;">2.59</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-48"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-49">
+                            <div class="wire" style="height: 6.735px; background: linear-gradient(to bottom, #d97706, #f59e0b, #d97706); " data-html-import-id="html-import-50"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-51">
+                        <span class="text-[10px] mb-2 text-slate-400 canva-text" data-html-import-id="html-import-52" data-template-id="span-15" style="color: rgb(148, 163, 184); font-size: 10px;">2.25</span>
+                        <div class="die border-slate-500" data-html-import-id="html-import-53"></div>
+                    </div>
+                
+                        <div class="flex-grow relative h-20 flex items-center" data-html-import-id="html-import-54">
+                            <div class="wire" style="height: 6.300000000000001px; background: linear-gradient(to bottom, #ef4444, #f97316, #ef4444); box-shadow: 0 0 10px #f97316;" data-html-import-id="html-import-55"></div>
+                        </div>
+                    
+                    <div class="flex flex-col items-center z-10" data-html-import-id="html-import-56">
+                        <span class="text-[10px] mb-2 text-white font-bold bg-slate-800 px-1 rounded canva-text" data-html-import-id="html-import-57" data-template-id="span-16" style="background: rgb(30, 41, 59); color: rgb(255, 255, 255); font-weight: 700; font-size: 10px;">2.10</span>
+                        <div class="die border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" data-html-import-id="html-import-58"></div>
+                    </div>
+                </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-html-import-id="html-import-59">
+            <!-- Veri Tablosu -->
+            <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 overflow-hidden shadow canva-container" data-html-import-id="html-import-60" data-template-id="div-17" style="background: rgb(255, 255, 255);">
+                <table class="w-full text-sm text-left" data-html-import-id="html-import-61">
+                    <thead class="text-xs text-white uppercase bg-slate-700" data-html-import-id="html-import-62" data-template-id="thead-18" style="background: rgb(51, 65, 85); color: rgb(255, 255, 255); font-size: 12px;">
+                        <tr data-html-import-id="html-import-63">
+                            <th class="px-4 py-3 text-center canva-text" data-html-import-id="html-import-64" data-template-id="th-19" style="color: rgb(255, 255, 255);">PASO</th>
+                            <th class="px-4 py-3 text-center canva-text" data-html-import-id="html-import-65" data-template-id="th-20" style="color: rgb(255, 255, 255);">GİRİŞ ÇAPI (MM)</th>
+                            <th class="px-4 py-3 text-center canva-text" data-html-import-id="html-import-66" data-template-id="th-21" style="color: rgb(255, 255, 255);">ÇIKIŞ ÇAPI (MM)</th>
+                            <th class="px-4 py-3 text-center canva-text" data-html-import-id="html-import-67" data-template-id="th-22" style="color: rgb(255, 255, 255);">KESİT DARALMASI (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" data-html-import-id="html-import-68">
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-69" data-template-id="tr-23" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-70" data-template-id="td-24" style="color: rgb(51, 65, 85);">Paso 1</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-71" data-template-id="td-25" style="color: rgb(51, 65, 85);">8.000</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-72" data-template-id="td-26" style="color: rgb(51, 65, 85);">6.850</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-73" data-template-id="td-27" style="color: rgb(51, 65, 85);">% 26.68</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-74" data-template-id="tr-28" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-75" data-template-id="td-29" style="color: rgb(51, 65, 85);">Paso 2</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-76" data-template-id="td-30" style="color: rgb(51, 65, 85);">6.850</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-77" data-template-id="td-31" style="color: rgb(51, 65, 85);">5.766</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-78" data-template-id="td-32" style="color: rgb(51, 65, 85);">% 29.15</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-79" data-template-id="tr-33" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-80" data-template-id="td-34" style="color: rgb(51, 65, 85);">Paso 3</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-81" data-template-id="td-35" style="color: rgb(51, 65, 85);">5.766</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-82" data-template-id="td-36" style="color: rgb(51, 65, 85);">4.848</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-83" data-template-id="td-37" style="color: rgb(51, 65, 85);">% 29.31</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-84" data-template-id="tr-38" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-85" data-template-id="td-39" style="color: rgb(51, 65, 85);">Paso 4</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-86" data-template-id="td-40" style="color: rgb(51, 65, 85);">4.848</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-87" data-template-id="td-41" style="color: rgb(51, 65, 85);">4.075</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-88" data-template-id="td-42" style="color: rgb(51, 65, 85);">% 29.35</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-89" data-template-id="tr-43" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-90" data-template-id="td-44" style="color: rgb(51, 65, 85);">Paso 5</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-91" data-template-id="td-45" style="color: rgb(51, 65, 85);">4.075</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-92" data-template-id="td-46" style="color: rgb(51, 65, 85);">3.469</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-93" data-template-id="td-47" style="color: rgb(51, 65, 85);">% 27.53</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-94" data-template-id="tr-48" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-95" data-template-id="td-49" style="color: rgb(51, 65, 85);">Paso 6</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-96" data-template-id="td-50" style="color: rgb(51, 65, 85);">3.469</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-97" data-template-id="td-51" style="color: rgb(51, 65, 85);">2.985</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-98" data-template-id="td-52" style="color: rgb(51, 65, 85);">% 25.96</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-99" data-template-id="tr-53" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-100" data-template-id="td-54" style="color: rgb(51, 65, 85);">Paso 7</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-101" data-template-id="td-55" style="color: rgb(51, 65, 85);">2.985</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-102" data-template-id="td-56" style="color: rgb(51, 65, 85);">2.589</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-103" data-template-id="td-57" style="color: rgb(51, 65, 85);">% 24.77</td>
+                    </tr>
+                
+                    <tr class="bg-white border-b hover:bg-slate-50 text-slate-700" data-html-import-id="html-import-104" data-template-id="tr-58" style="background: rgb(255, 255, 255); color: rgb(51, 65, 85);">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-105" data-template-id="td-59" style="color: rgb(51, 65, 85);">Paso 8</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-106" data-template-id="td-60" style="color: rgb(51, 65, 85);">2.589</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-107" data-template-id="td-61" style="color: rgb(51, 65, 85);">2.245</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-108" data-template-id="td-62" style="color: rgb(51, 65, 85);">% 24.81</td>
+                    </tr>
+                
+                    <tr class="bg-red-50 highlight-row font-bold text-red-700 border-b-2 border-red-200" data-html-import-id="html-import-109" data-template-id="tr-63" style="background: rgba(239, 68, 68, 0.176); color: rgb(185, 28, 28); font-weight: 700;">
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-110" data-template-id="td-64" style="color: rgb(185, 28, 28);">Paso 9 (Finishing Die)</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-111" data-template-id="td-65" style="color: rgb(185, 28, 28);">2.245</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-112" data-template-id="td-66" style="color: rgb(185, 28, 28);">2.100</td>
+                        <td class="px-4 py-2 text-center canva-text" data-html-import-id="html-import-113" data-template-id="td-67" style="color: rgb(185, 28, 28);">% 12.50</td>
+                    </tr>
+                </tbody>
+                </table>
+            </div>
+
+            <!-- Analiz Kartı -->
+            <div class="flex flex-col" data-html-import-id="html-import-114">
+                <div id="analysisCard" class="flex-grow rounded-xl p-5 border-2 shadow-lg transition-all duration-500 bg-emerald-50 border-emerald-400 text-emerald-900 canva-container" data-html-import-id="html-import-115" data-template-id="div-68" style="background: rgba(236, 253, 245, 0.996); color: rgb(6, 78, 59);">
+                    <div class="flex items-center mb-3 border-b pb-2" id="analysisHeader" data-html-import-id="html-import-116">
+                        <i id="analysisIcon" class="fa-solid text-2xl mr-3 fa-fire-flame-curved text-orange-500 canva-text" data-html-import-id="html-import-117" data-template-id="i-69" style="color: rgb(249, 115, 22); font-size: 24px;"></i>
+                        <h3 id="analysisTitle" class="text-lg font-bold canva-text" data-html-import-id="html-import-118" data-template-id="h3-70" style="color: rgb(6, 78, 59); font-weight: 700; font-size: 18px;">Dinamik Rekristalizasyon</h3>
+                    </div>
+                    <p id="analysisText" class="text-sm font-medium leading-relaxed canva-text" data-html-import-id="html-import-119" data-template-id="p-71" style="color: rgb(6, 78, 59); font-weight: 500; font-size: 14px;">Önceki kalıplardaki redüksiyon oranları, teli adyabatik olarak ısıtmıştır. Son kalıpta ise sadece %12.50'lik hafif bir redüksiyon oranı uygulanır. Yeni dislokasyon üretimi minimumda kaldığı için mevcut ısı enerjisi ile uzama %2.78'e çıkmaktadır.</p>
+                    
+                    <div class="mt-4 grid grid-cols-2 gap-2" data-html-import-id="html-import-120">
+                        <div class="bg-white/50 p-2 rounded text-center border border-black/10 canva-container" data-html-import-id="html-import-121" data-template-id="div-72" style="background: rgba(255, 255, 255, 0.5);">
+                            <span class="block text-[10px] uppercase font-bold opacity-70 canva-text" data-html-import-id="html-import-122" data-template-id="span-73" style="color: rgb(6, 78, 59); font-weight: 700; font-size: 10px;">TOPLAM GERİNİM (Ε)</span>
+                            <span id="strainValue" class="text-lg font-black canva-text" data-html-import-id="html-import-123" data-template-id="span-74" style="color: rgb(6, 78, 59); font-weight: 900; font-size: 18px;">4.51</span>
+                        </div>
+                        <div class="bg-white/50 p-2 rounded text-center border border-black/10 canva-container" data-html-import-id="html-import-124" data-template-id="div-75" style="background: rgba(255, 255, 255, 0.5);">
+                            <span class="block text-[10px] uppercase font-bold opacity-70 canva-text" data-html-import-id="html-import-125" data-template-id="span-76" style="color: rgb(6, 78, 59); font-weight: 700; font-size: 10px;">KOPMA UZAMASI</span>
+                            <span id="elongationValue" class="text-lg font-black canva-text" data-html-import-id="html-import-126" data-template-id="span-77" style="color: rgb(6, 78, 59); font-weight: 900; font-size: 18px;">%2.78</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script data-html-import-id="html-import-127">
+        const data = {
+            '2.80': {
+                dies: [8.0, 6.85, 5.766, 4.848, 4.075, 3.469, 2.80],
+                reductions: [26.68, 29.15, 29.31, 29.35, 27.53, 34.85],
+                strain: '3.93',
+                elongation: '%4.15',
+                cardClass: 'bg-slate-50 border-slate-300 text-slate-800',
+                icon: 'fa-gears text-slate-500',
+                title: 'Normal Pekleşme Rejimi',
+                text: 'Son kalıpta uygulanan %34.85\'lik redüksiyon oranı serttir ancak toplam gerinim (ε=3.93) henüz Aşırı Plastik Deformasyon (SPD) eşiğinin altındadır. Dislokasyon yığılması tolere edilebilir düzeyde kalır ve malzeme beklenen şekilde logaritmik pekleşir.'
+            },
+            '2.50': {
+                dies: [8.0, 6.85, 5.766, 4.848, 4.075, 3.469, 2.985, 2.50],
+                reductions: [26.68, 29.15, 29.31, 29.35, 27.53, 25.96, 29.86],
+                strain: '4.15',
+                elongation: '%1.45',
+                cardClass: 'bg-red-50 border-red-400 text-red-900',
+                icon: 'fa-triangle-exclamation text-red-600',
+                title: 'Aşırı Pekleşme',
+                text: 'Kritik Hata: Toplam gerinim (ε=4.15) SPD sınırını aşmıştır. Dislokasyon üretim hızı, termal toparlanma hızını yendiği için kristal yapı tamamen kilitlenir ve uzama %1.45\'e kadar düşmüştür.'
+            },
+            '2.10': {
+                dies: [8.0, 6.85, 5.766, 4.848, 4.075, 3.469, 2.985, 2.589, 2.245, 2.10],
+                reductions: [26.68, 29.15, 29.31, 29.35, 27.53, 25.96, 24.77, 24.81, 12.50],
+                strain: '4.51',
+                elongation: '%2.78',
+                cardClass: 'bg-emerald-50 border-emerald-400 text-emerald-900',
+                icon: 'fa-fire-flame-curved text-orange-500',
+                title: 'Dinamik Rekristalizasyon',
+                text: 'Önceki kalıplardaki redüksiyon oranları, teli adyabatik olarak ısıtmıştır. Son kalıpta ise sadece %12.50\'lik hafif bir redüksiyon oranı uygulanır. Yeni dislokasyon üretimi minimumda kaldığı için mevcut ısı enerjisi ile uzama %2.78\'e çıkmaktadır.'
+            }
+        };
+
+        function loadData(dia) {
+            // Buton stillerini güncelle
+            ['2.80', '2.50', '2.10'].forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if(id === dia) {
+                    btn.className = 'px-6 py-3 rounded-lg font-bold transition-all bg-emerald-600 text-white shadow-lg transform scale-105';
+                } else {
+                    btn.className = 'px-6 py-3 rounded-lg font-bold transition-all bg-slate-200 text-slate-600 hover:bg-slate-300 transform scale-100';
+                }
+            });
+
+            const currentData = data[dia];
+
+            // Tabloyu Doldur
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            for(let i=0; i<currentData.reductions.length; i++) {
+                const isLast = (i === currentData.reductions.length - 1);
+                const rowClass = isLast ? 'bg-red-50 highlight-row font-bold text-red-700 border-b-2 border-red-200' : 'bg-white border-b hover:bg-slate-50 text-slate-700';
+                const passName = isLast ? `Paso ${i+1} (Finishing Die)` : `Paso ${i+1}`;
+                
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td class="px-4 py-2 text-center">${passName}</td>
+                        <td class="px-4 py-2 text-center">${currentData.dies[i].toFixed(3)}</td>
+                        <td class="px-4 py-2 text-center">${currentData.dies[i+1].toFixed(3)}</td>
+                        <td class="px-4 py-2 text-center">% ${currentData.reductions[i].toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+
+            // Görseli Doldur
+            const vis = document.getElementById('visualContainer');
+            vis.innerHTML = '';
+            let currentWidth = 24; // max wire width
+            
+            for(let i=0; i<currentData.dies.length; i++) {
+                const isLast = (i === currentData.dies.length - 1);
+                
+                if (i > 0) {
+                    // Tel (Wire)
+                    const prevDie = currentData.dies[i-1];
+                    const currDie = currentData.dies[i];
+                    // Çap düştükçe telin kalınlığını CSS ile düşür
+                    currentWidth = (currDie / 8.0) * 24; 
+                    
+                    const isLastWire = (i === currentData.dies.length - 1);
+                    const wireColor = isLastWire && dia === '2.10' ? 'linear-gradient(to bottom, #ef4444, #f97316, #ef4444)' : 'linear-gradient(to bottom, #d97706, #f59e0b, #d97706)';
+                    const glow = isLastWire && dia === '2.10' ? 'box-shadow: 0 0 10px #f97316;' : '';
+
+                    vis.innerHTML += `
+                        <div class="flex-grow relative h-20 flex items-center">
+                            <div class="wire" style="height: ${currentWidth}px; background: ${wireColor}; ${glow}"></div>
+                        </div>
+                    `;
+                }
+
+                // Kalıp (Die) - Sonuncuyu renklendir
+                const dieClass = isLast ? (dia === '2.50' ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]') : 'border-slate-500';
+                const labelColor = isLast ? 'text-white font-bold bg-slate-800 px-1 rounded' : 'text-slate-400';
+
+                vis.innerHTML += `
+                    <div class="flex flex-col items-center z-10">
+                        <span class="text-[10px] mb-2 ${labelColor}">${currentData.dies[i].toFixed(2)}</span>
+                        <div class="die ${dieClass}"></div>
+                    </div>
+                `;
+            }
+
+            // Kartı Güncelle
+            const card = document.getElementById('analysisCard');
+            card.className = `flex-grow rounded-xl p-5 border-2 shadow-lg transition-all duration-500 ${currentData.cardClass}`;
+            document.getElementById('analysisIcon').className = `fa-solid text-2xl mr-3 ${currentData.icon}`;
+            document.getElementById('analysisTitle').innerText = currentData.title;
+            document.getElementById('analysisText').innerText = currentData.text;
+            document.getElementById('strainValue').innerText = currentData.strain;
+            document.getElementById('elongationValue').innerText = currentData.elongation;
+        }
+
+        // Sayfa yüklendiğinde 2.10'u seç
+        window.onload = () => loadData('2.10');
+
+    </script>
+
+<script src="/_sdk/editing_sdk.js"></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11394fc3697e31f',t:'MTc4MjM4NjQxNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
