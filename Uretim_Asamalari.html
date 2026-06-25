@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuMg0.4 Mekanik Evrim İllüstrasyonu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        .step-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .step-btn.active { background-color: #1e293b; color: white; transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border-color: transparent; }
+        .metric-value { transition: all 0.5s ease; }
+        
+        /* Çap Görselleştirmesi için */
+        .wire-cross-section {
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fca5a5, #b91c1c);
+            border: 2px solid #7f1d1d;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), 2px 2px 5px rgba(0,0,0,0.2);
+            margin: 0 auto;
+            transition: all 0.5s ease;
+        }
+        .alloy-particles { background-image: radial-gradient(#475569 1px, transparent 1px); background-size: 8px 8px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center items-center min-h-screen">
+
+    <div class="max-w-6xl w-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+        
+        <!-- Header -->
+        <div class="bg-slate-800 text-white p-6 md:p-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+            <div class="relative z-10">
+                <div class="inline-block bg-emerald-500 text-slate-900 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider shadow-lg">Arş. Gör. Alperen SOYER</div>
+                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Temel Üretim Seviyeleri ve Değerleri</h1>
+                <p class="text-slate-300 font-medium text-lg">Seviye 4 (Döküm) ➔ Seviye 1 (Nihai İnce Çekme)</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row">
+            
+            <!-- Sol Panel: Üretim Seviyeleri (Tıklanabilir) -->
+            <div class="lg:w-1/3 bg-slate-50 p-6 border-r border-slate-200">
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b pb-2">Üretim Proses Akışı</h2>
+                
+                <div class="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                    
+                    <!-- Seviye 4 -->
+                    <button onclick="updateData('20')" id="btn-20" class="step-btn relative flex items-center justify-between w-full p-4 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-100 text-left group">
+                        <div>
+                            <span class="text-xs font-bold text-indigo-500 block mb-1">SEVİYE 4</span>
+                            <span class="font-bold text-lg text-slate-700 group-[.active]:text-white">Döküm</span>
+                        </div>
+                        <span class="font-black text-xl text-slate-400 group-[.active]:text-emerald-400">Ø 20 mm</span>
+                    </button>
+
+                    <!-- Seviye 3 -->
+                    <button onclick="updateData('14')" id="btn-14" class="step-btn relative flex items-center justify-between w-full p-4 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-100 text-left group">
+                        <div>
+                            <span class="text-xs font-bold text-blue-500 block mb-1">SEVİYE 3</span>
+                            <span class="font-bold text-lg text-slate-700 group-[.active]:text-white">Konform</span>
+                        </div>
+                        <span class="font-black text-xl text-slate-400 group-[.active]:text-emerald-400">Ø 14 mm</span>
+                    </button>
+
+                    <!-- Seviye 2 -->
+                    <button onclick="updateData('8')" id="btn-8" class="step-btn relative flex items-center justify-between w-full p-4 rounded-xl border-2 border-slate-200 bg-white hover:bg-slate-100 text-left group">
+                        <div>
+                            <span class="text-xs font-bold text-amber-500 block mb-1">SEVİYE 2</span>
+                            <span class="font-bold text-lg text-slate-700 group-[.active]:text-white">Kaba Çekme</span>
+                        </div>
+                        <span class="font-black text-xl text-slate-400 group-[.active]:text-emerald-400">Ø 8 mm</span>
+                    </button>
+
+                    <!-- Seviye 1 (İnce Çekme Seçenekleri) -->
+                    <div class="pt-4 mt-4 border-t border-slate-200">
+                        <span class="text-xs font-bold text-emerald-500 block mb-3 text-center">SEVİYE 1: İNCE ÇEKME (413/415 HATTI)</span>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="updateData('2.8')" id="btn-2.8" class="step-btn p-3 rounded-lg border-2 border-slate-200 bg-white hover:bg-slate-100 text-center flex flex-col items-center group">
+                                <span class="text-xs text-slate-500 group-[.active]:text-slate-300">Pekleşme</span>
+                                <span class="font-bold text-slate-700 group-[.active]:text-white">2.8 mm</span>
+                            </button>
+                            <button onclick="updateData('2.5')" id="btn-2.5" class="step-btn p-3 rounded-lg border-2 border-slate-200 bg-white hover:bg-slate-100 text-center flex flex-col items-center group">
+                                <span class="text-xs text-slate-500 group-[.active]:text-slate-300">Kilitlenme</span>
+                                <span class="font-bold text-slate-700 group-[.active]:text-white">2.5 mm</span>
+                            </button>
+                            <button onclick="updateData('2.1')" id="btn-2.1" class="step-btn p-3 rounded-lg border-2 border-slate-200 bg-white hover:bg-slate-100 text-center flex flex-col items-center group">
+                                <span class="text-xs text-slate-500 group-[.active]:text-slate-300">Rebound</span>
+                                <span class="font-bold text-slate-700 group-[.active]:text-white">2.1 mm</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ Panel: Veriler ve Fiziksel Yorum -->
+            <div class="lg:w-2/3 p-6 md:p-8 flex flex-col">
+                
+                <!-- Veri Kartları -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    
+                    <!-- Mukavemet -->
+                    <div class="bg-red-50 p-6 rounded-2xl border-2 border-red-100 flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
+                        <i class="fa-solid fa-dumbbell text-red-500/10 text-6xl absolute -right-2 -bottom-2"></i>
+                        <span class="text-xs font-bold text-red-800 uppercase tracking-widest mb-2 z-10">Çekme Dayanımı</span>
+                        <div class="flex items-baseline z-10">
+                            <span id="valMukavemet" class="metric-value text-4xl md:text-5xl font-black text-red-600 tracking-tighter">0</span>
+                            <span class="text-sm font-bold text-red-700 ml-1">MPa</span>
+                        </div>
+                    </div>
+
+                    <!-- Uzama -->
+                    <div id="uzamaCard" class="bg-blue-50 p-6 rounded-2xl border-2 border-blue-100 flex flex-col items-center justify-center relative overflow-hidden shadow-sm transition-colors duration-500">
+                        <i class="fa-solid fa-arrows-left-right text-blue-500/10 text-6xl absolute -right-2 -bottom-2"></i>
+                        <span class="text-xs font-bold text-blue-800 uppercase tracking-widest mb-2 z-10">Kopma Uzaması</span>
+                        <div class="flex items-baseline z-10">
+                            <span class="text-xl font-bold text-blue-700 mr-1">%</span>
+                            <span id="valUzama" class="metric-value text-4xl md:text-5xl font-black text-blue-600 tracking-tighter">0</span>
+                        </div>
+                    </div>
+
+                    <!-- İletkenlik -->
+                    <div class="bg-amber-50 p-6 rounded-2xl border-2 border-amber-100 flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
+                        <i class="fa-solid fa-bolt text-amber-500/10 text-6xl absolute -right-2 -bottom-2"></i>
+                        <span class="text-xs font-bold text-amber-800 uppercase tracking-widest mb-2 z-10">İletkenlik</span>
+                        <div class="flex items-baseline z-10">
+                            <span id="valIletkenlik" class="metric-value text-4xl md:text-5xl font-black text-amber-500 tracking-tighter">0</span>
+                            <span class="text-sm font-bold text-amber-700 ml-1">mS/m</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Çap İllüstrasyonu ve Yorum -->
+                <div class="flex-grow bg-slate-50 rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row items-center gap-8 shadow-inner">
+                    
+                    <!-- Çap Animasyonu -->
+                    <div class="flex-shrink-0 w-32 h-32 flex items-center justify-center bg-white rounded-xl shadow-md border border-slate-100">
+                        <div id="wireVisual" class="wire-cross-section alloy-particles" style="width: 100px; height: 100px;"></div>
+                    </div>
+
+                    <!-- Fiziksel Yorum -->
+                    <div class="flex-grow">
+                        <div class="flex items-center mb-3">
+                            <i id="yorumIcon" class="fa-solid fa-microscope text-2xl text-slate-700 mr-3"></i>
+                            <h3 id="yorumBaslik" class="text-xl font-extrabold text-slate-800">Termomekanik Analiz</h3>
+                        </div>
+                        <p id="yorumMetin" class="text-slate-600 font-medium leading-relaxed text-justify"></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TEZDEKİ BİREBİR TABLO VERİLERİ (Görüntü 8725aa.png)
+        const stageData = {
+            '20': {
+                mukavemet: 229.6,
+                uzama: 54.54,
+                iletkenlik: 46.10,
+                visSize: 100, // 100px maks boyut
+                icon: 'fa-fire',
+                baslik: 'Seviye 4: Döküm Başlangıç Yapısı',
+                metin: 'İri taneli OFC CuMg0.4 döküm yapısı. Malzeme tam tavlı ve dislokasyon yoğunluğu minimum düzeydedir. Bu nedenle kopma uzaması (%54.54) ve elektriksel iletkenliği (46.10 mS/m) tüm sürecin en yüksek değerindedir.',
+                uzamaColor: 'bg-blue-50 border-blue-100 text-blue-600'
+            },
+            '14': {
+                mukavemet: 279.6,
+                uzama: 46.95,
+                iletkenlik: 45.45,
+                visSize: 70,
+                icon: 'fa-compress',
+                baslik: 'Seviye 3: Konform İle Dinamik Rekristalizasyon',
+                metin: '20 mm tel, konform işlemine girerek tamamen sürtünmeden kaynaklı ısı oluşumu nedeniyle dinamik rekristalizasyon meydana gelmiştir. Döküm boşlukları kapanmış ve dinamik rekristalizasyon sayesinde iç yapı homojenleşmiştir. Çekme dayanımı 279.6 MPa\'ya yükselirken, iletkenlik elektron saçılmasının başlamasıyla 45.45 mS/m\'ye gerilemiştir.',
+                uzamaColor: 'bg-blue-50 border-blue-100 text-blue-600'
+            },
+            '8': {
+                mukavemet: 504.7,
+                uzama: 5.66,
+                iletkenlik: 44.02,
+                visSize: 40,
+                icon: 'fa-layer-group',
+                baslik: 'Seviye 2: Kaba Çekme (Breakdown)',
+                metin: 'Tungsten Karbür (TC/WC) kalıplar kullanılarak yüzey hataları sıyrılmış (shaving) ve tel soğuk şekillendirmeye sokulmuştur. Soğuk deformasyon matriste yüksek miktarda dislokasyon yığılması oluşturduğu için mukavemet 504.7 MPa\'ya yükselmiş, kopma uzaması ise pekleşme nedeniyle %5.66\'ya düşmüştür.',
+                uzamaColor: 'bg-slate-100 border-slate-200 text-slate-600'
+            },
+            '2.8': {
+                mukavemet: 663.8,
+                uzama: 4.15,
+                iletkenlik: 42.09,
+                visSize: 20,
+                icon: 'fa-gears',
+                baslik: 'Seviye 1: İnce Çekme - Normal Pekleşme',
+                metin: '413/415 Niehoff MSM 85 hattında PCD kalıplarla ince çekim işlemi. Artan kümülatif gerinim (True Strain) dislokasyonları daha da sıkıştırmış, elektronların yollarına bariyerler kurarak iletkenliği 42.09 mS/m\'ye düşürmüştür. Uzama %4.15 seviyesinde logaritmik olarak düşmeye devam etmektedir.',
+                uzamaColor: 'bg-slate-100 border-slate-200 text-slate-600'
+            },
+            '2.5': {
+                mukavemet: 672.8,
+                uzama: 1.45,
+                iletkenlik: 42.44,
+                visSize: 17,
+                icon: 'fa-lock',
+                baslik: 'Seviye 1: İnce Çekme - Gevrekleşme ve Kilitlenme',
+                metin: 'Aşırı Plastik Deformasyon eşiği geçildi. Matris o kadar çok dislokasyonla doldu ki, malzeme plastik yeteneğini tamamen kaybetti ve uzama %1.45 ile en dip noktaya (gevrekleşme) ulaştı. Elektriksel iletkenlikteki ufak artış, lokal magnezyum dalgalanması veya noktasal hata yutulmasından (vacancy annihilation) kaynaklandığı düşünülmektedir.',
+                uzamaColor: 'bg-red-50 border-red-300 text-red-600'
+            },
+            '2.1': {
+                mukavemet: 710.7,
+                uzama: 2.78,
+                iletkenlik: 41.96,
+                visSize: 14,
+                icon: 'fa-fire-flame-curved',
+                baslik: 'Seviye 1: İnce Çekme - Dinamik Toparlanma (Rebound)',
+                metin: 'KRİTİK NOKTA: 2.50\'deki kilitlenmenin ardından 2.10 mm kalıbındaki yüksek üretim hızı güçlü bir "Adyabatik Isı" oluşturdu. Bu ısı dislokasyon hareketini kolaylaştırarak malzemenin sünekliğini geri getirdi ve uzamayı %2.78\'e çıktı.',
+                uzamaColor: 'bg-emerald-50 border-emerald-300 text-emerald-600'
+            }
+        };
+
+        // Rakamları animasyonlu artırma fonksiyonu
+        function animateValue(obj, start, end, duration, isFloat = true) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // Ease out cubic
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const currentVal = start + (end - start) * easeProgress;
+                obj.innerHTML = isFloat ? currentVal.toFixed(2) : Math.floor(currentVal);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function updateData(level) {
+            // Buton Stilleri
+            const buttons = ['20', '14', '8', '2.8', '2.5', '2.1'];
+            buttons.forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if (id === level) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            const currentData = stageData[level];
+            
+            // Mevcut değerleri al (animasyon başlangıcı için)
+            const elMukavemet = document.getElementById('valMukavemet');
+            const elUzama = document.getElementById('valUzama');
+            const elIletkenlik = document.getElementById('valIletkenlik');
+            
+            const startMuk = parseFloat(elMukavemet.innerText) || 0;
+            const startUzama = parseFloat(elUzama.innerText) || 0;
+            const startIletken = parseFloat(elIletkenlik.innerText) || 0;
+
+            // Rakamları Anime Et
+            animateValue(elMukavemet, startMuk, currentData.mukavemet, 800);
+            animateValue(elUzama, startUzama, currentData.uzama, 800);
+            animateValue(elIletkenlik, startIletken, currentData.iletkenlik, 800);
+
+            // Uzama Kartı Rengini Güncelle (Rebound vs Kilitlenme vurgusu için)
+            const uzamaCard = document.getElementById('uzamaCard');
+            uzamaCard.className = `p-6 rounded-2xl border-2 flex flex-col items-center justify-center relative overflow-hidden shadow-sm transition-colors duration-500 ${currentData.uzamaColor}`;
+            
+            // Eğer Red/Green ise arka plandaki ikonu değiştir
+            let bgIconColor = 'text-blue-500/10';
+            if(currentData.uzamaColor.includes('red')) bgIconColor = 'text-red-500/10';
+            if(currentData.uzamaColor.includes('emerald')) bgIconColor = 'text-emerald-500/10';
+            if(currentData.uzamaColor.includes('slate')) bgIconColor = 'text-slate-500/10';
+            
+            uzamaCard.innerHTML = `
+                <i class="fa-solid fa-arrows-left-right ${bgIconColor} text-6xl absolute -right-2 -bottom-2 transition-colors"></i>
+                <span class="text-xs font-bold uppercase tracking-widest mb-2 z-10 opacity-80">Kopma Uzaması</span>
+                <div class="flex items-baseline z-10">
+                    <span class="text-xl font-bold mr-1 opacity-80">%</span>
+                    <span id="valUzama" class="metric-value text-4xl md:text-5xl font-black tracking-tighter">${currentData.uzama.toFixed(2)}</span>
+                </div>
+            `;
+
+            // Çap Görseli
+            const wireVis = document.getElementById('wireVisual');
+            wireVis.style.width = currentData.visSize + 'px';
+            wireVis.style.height = currentData.visSize + 'px';
+            
+            // Eğer ince çekimse (shaved) rengi parlak yap
+            if(parseFloat(level) <= 8) {
+                wireVis.style.background = 'radial-gradient(circle at 30% 30%, #fbbf24, #d97706)';
+                wireVis.style.borderColor = '#92400e';
+            } else {
+                wireVis.style.background = 'radial-gradient(circle at 30% 30%, #fca5a5, #b91c1c)';
+                wireVis.style.borderColor = '#7f1d1d';
+            }
+
+            // Metinler
+            document.getElementById('yorumIcon').className = `fa-solid ${currentData.icon} text-2xl text-slate-700 mr-3 transition-all`;
+            document.getElementById('yorumBaslik').innerText = currentData.baslik;
+            document.getElementById('yorumMetin').innerHTML = currentData.metin.replace('KRİTİK NOKTA', '<strong>KRİTİK NOKTA</strong>');
+        }
+
+        // Başlangıçta 20mm'yi yükle
+        window.onload = () => updateData('20');
+
+    </script>
+</body>
+</html>
